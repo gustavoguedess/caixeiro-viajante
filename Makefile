@@ -9,6 +9,8 @@ endif
 .PHONY = remove-prov
 
 all:
+	@mkdir -p bin
+	@mkdir -p build
 	gcc src/genpoints.c -o bin/genpoints
 	g++ src/tsp.cpp -o bin/tsp
 
