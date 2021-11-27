@@ -155,7 +155,7 @@ void approx_tsp_tour(Graph G){
     int r = 0;
     Graph P = mst_prim(G, r);
     print_graph(P);
-    save_graph(P, "tree.txt");
+    save_graph(P, "build/tree.txt");
 }
 
 int main(int argc, char *argv[]){

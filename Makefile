@@ -6,7 +6,7 @@ ifeq (input,$(firstword $(MAKECMDGOALS)))
   $(eval $(ARGS):;@:)
 endif
 
-.PHONY = remove-prov
+.PHONY = graph tree cycle
 
 all:
 	@mkdir -p bin
@@ -19,7 +19,7 @@ clean:
 	rm -rf build/*
 input:
 	./bin/genpoints $(ARGS)
-	cp input.txt build/input.txt
+	mv input.txt build/input.txt
 	tail -n +1 build/input.txt > build/input2.txt 
 	gnuplot lib/points.plot
 	rm -rf build/input2.txt
@@ -27,18 +27,19 @@ input:
 run:
 	./bin/tsp build/input.txt
 
-result:
+result: graph tree cycle
+
+graph:
+	sed '$$!N;s/$$/\n/' build/graph_complete.txt > build/graph_complete2.txt
+	gnuplot lib/graph.plot 
+	rm -rf build/graph_complete2.txt
+
+tree:
 	sed '$$!N;s/$$/\n/' build/tree.txt > build/tree2.txt
 	gnuplot lib/tree.plot 
 	rm -rf build/tree2.txt
-	gnuplot lib/cycle.plot
 
-graph:
-	sed '$$!N;s/$$/\n/' build/graph_complete.txt > build/tree2.txt
-	gnuplot lib/tree.plot 
-	rm -rf build/tree2.txt
-
-tree:
-	sed '$$!N;s/$$/\n/' tree.txt > build/tree2.txt
-	gnuplot lib/tree.plot 
-	rm -rf build/tree2.txt
+cycle:
+	sed '$$!N;s/$$/\n/' build/cycle.txt > build/cycle2.txt
+	gnuplot lib/cycle.plot 
+	rm -rf build/cycle2.txt
