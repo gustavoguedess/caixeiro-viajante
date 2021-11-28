@@ -3,7 +3,7 @@ set size ratio 1
 unset key
 unset tics 
 unset border 
-set size ratio 1
+set size ratio -1
 set pointsize 0.05
 set term pdf enhanced 
 set out 'build/graph.pdf'

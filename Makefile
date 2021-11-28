@@ -6,7 +6,7 @@ ifeq (input,$(firstword $(MAKECMDGOALS)))
   $(eval $(ARGS):;@:)
 endif
 
-.PHONY = graph tree cycle
+.PHONY = tree cycle
 
 all:
 	@mkdir -p bin
@@ -20,14 +20,14 @@ clean:
 input:
 	./bin/genpoints $(ARGS)
 	mv input.txt build/input.txt
-	tail -n +1 build/input.txt > build/input2.txt 
+	sed '1d' build/input.txt > build/input2.txt 
 	gnuplot lib/points.plot
 	rm -rf build/input2.txt
 
 run:
 	./bin/tsp build/input.txt
 
-result: graph tree cycle
+result: tree cycle
 
 graph:
 	sed '$$!N;s/$$/\n/' build/graph_complete.txt > build/graph_complete2.txt
