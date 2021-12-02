@@ -5,6 +5,7 @@
 #include <ostream>
 #include <fstream>
 #include <vector>
+#include <time.h>
 
 #define MAX_V 1123
 #define INF 1123456
@@ -44,7 +45,7 @@ struct Heap{
     vector<int> cost;
     int n;
     Heap():n(0){v.push_back(0);};
-    
+
     void add_vertice(int i, int c){
         v.push_back(i);
         cost.push_back(c);
@@ -94,7 +95,7 @@ Graph T;
 // ---------------- LEITURA E ESCRITA DO ARQUIVO --------------------
 Graph read_points(char *file_name){
     FILE *fp = fopen(file_name, "r");
-    
+
     if (fp == NULL)
 	{
 		fprintf(stderr, "Falha ao ler a entrada.\n");
@@ -111,7 +112,7 @@ Graph read_points(char *file_name){
     }
 
     fclose(fp);
-    
+
     return R;
 }
 
@@ -145,7 +146,7 @@ void mst_prim(Graph* T, int r=0){
     vector<int> visited(T->n);
     vector<int> parent(T->n);
 
-    
+
     //Cria a Heap e a Árvore resultante
     for(int i=0; i<T->n; i++){
         H.add_vertice(i,INF); //Instancia a Heap com valores infinitos
@@ -158,18 +159,18 @@ void mst_prim(Graph* T, int r=0){
         int u = H.extract_min();
         T->add_edge(parent[u], u);
         visited[u]=1;
-        
+
         for(int i=1; i<=H.n; i++){
             int v = H.v[i];
             float dist = T->distance(T->v[u],T->v[v]);
             if(dist < H.cost[v]){
-                parent[v] = u; 
+                parent[v] = u;
                 H.change_cost(i, dist);
             }
         }
-        
+
     }
-    
+
 }
 
 void dfs(Graph* T, int u, vector<int>& visit){
@@ -205,20 +206,20 @@ double pre_order(Graph* T, int r=0){
 int main(int argc, char *argv[]){
     clock_t t;
     t = clock();
-    
-    Graph T = read_points(argv[1]);
-    
+
+    Graph T = read_points("input.txt");
+
     mst_prim(&T);
-    
+
     double cost = pre_order(&T);
-    
-    save_tree("build/tree.txt", T);
-    save_cycle("build/cycle.txt", T);
-    
+
+    //save_tree("tree.txt", T);
+    //save_cycle("cycle.txt", T);
+
 
     t = clock()-t;
     double time = (double)t/CLOCKS_PER_SEC;
     printf("%lf %lf\n", time, cost);
-    
+
     return 0;
 }
