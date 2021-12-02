@@ -17,7 +17,6 @@ struct Vertice{
     vector<int> adj;
 
     Vertice(int x, int y):x(x),y(y),adj_size(0){}
-    string to_string(){ return std::to_string(x) +" "+ std::to_string(y); }
     void add_adj(int i){
         adj.push_back(i);
         adj_size++;
@@ -26,6 +25,7 @@ struct Vertice{
 
 struct Graph {
     int n;
+    vector<int> order;
     vector<Vertice> v;
 
     Graph():n(0){}
@@ -38,24 +38,6 @@ struct Graph {
     void add_edge(int a, int b){
         v[a].add_adj(b);
     }
-
-    //*******************************************
-    //TODO remover depois
-    string print_adj(int a){
-        string tostring = "[";
-        for (int i=0; i<v[a].adj_size; i++)
-            tostring+=std::to_string(v[a].adj[i])+",";
-        tostring+="]";
-        return tostring;
-    }
-    string to_string(){
-        string tostring = "";
-        for(int i=0; i<n; i++){
-            tostring+= std::to_string(i) +": "+v[i].to_string()+" "+print_adj(i)+"\n";
-        }
-        return tostring;
-    }
-    //********************************************
 };
 struct Heap{
     vector<int> v;
@@ -75,11 +57,12 @@ struct Heap{
         min_heapify(1);
         return min_heap;
     }
-    void update(int i){
-        int p = i/2;
-        if(p>0 && cost[v[i]]<cost[v[p]]){
-            change(i,p);
-            update(p);
+    int parent(int i){return i/2;}
+    void change_cost(int i, int c){
+        cost[v[i]]=c;
+        while (i>1 && cost[v[i]]<cost[v[parent(i)]]){
+            change(i,parent(i));
+            i=parent(i);
         }
     }
     void min_heapify(int i){
@@ -108,7 +91,7 @@ struct Heap{
 
 Graph T;
 
-// ---------------- LEITURA DO ARQUIVO --------------------
+// ---------------- LEITURA E ESCRITA DO ARQUIVO --------------------
 Graph read_points(char *file_name){
     FILE *fp = fopen(file_name, "r");
     
@@ -132,136 +115,110 @@ Graph read_points(char *file_name){
     return R;
 }
 
-void save_tree(string name){
-    std::ofstream example(name);
-    std::ostream& os = example;
+void save_tree(const char* filename, Graph T){
+    FILE* fp = fopen(filename, "w");
 
     for(int i=0; i<T.n; i++){
         for(int j=0; j<T.v[i].adj_size; j++){
-            int v=T.v[i].adj[j];
-            if(i!=v){
-                os << T.v[i].to_string() << endl;
-                os << T.v[v].to_string() << endl;
-            }
+            int v = T.v[i].adj[j];
+            fprintf(fp, "%d %d\n", T.v[i].x, T.v[i].y);
+            fprintf(fp, "%d %d\n", T.v[v].x, T.v[v].y);
         }
     }
+
+    fclose(fp);
 }
 
-/*
-void save_cycle(Graph G, string name){
-    std::ofstream example(name);
-    std::ostream& os = example;
+void save_cycle(const char* filename, Graph T){
+    FILE* fp = fopen(filename, "w");
 
-    for(int i=0; i<=G.n; i++)
-        os << G.v[i%G.n].to_string() << endl;
-    
+    for(int i=0; i<=T.n; i++){
+        int u = T.order[i%T.n];
+        fprintf(fp, "%d %d\n", T.v[u].x, T.v[u].y);
+    }
+    fclose(fp);
 }
-
-void print_graph(Graph G){
-    cout << G.to_string() << endl;
-}
-*/
 // ------------------------------------------------------
 
-Graph mst_prim(Graph G, int r){
+void mst_prim(Graph* T, int r=0){
     Heap H;
-    vector<int> visited(G.n);
-    vector<int> parent(G.n);
+    vector<int> visited(T->n);
+    vector<int> parent(T->n);
 
     
-    for(int i=0; i<G.n; i++){
-        H.add_vertice(i,INF);
-        T.add_vertice(G.v[i]);
+    //Cria a Heap e a Árvore resultante
+    for(int i=0; i<T->n; i++){
+        H.add_vertice(i,INF); //Instancia a Heap com valores infinitos
         visited[i]=0;
     }
-    H.cost[r]=0;
     parent[r]=r;
-    H.update(r+1);
+    H.change_cost(r+1, 0);
 
     while(H.n>0){
         int u = H.extract_min();
-        T.add_edge(parent[u], u);
+        T->add_edge(parent[u], u);
         visited[u]=1;
         
         for(int i=1; i<=H.n; i++){
             int v = H.v[i];
-            float dist = G.distance(G.v[u],G.v[v]);
+            float dist = T->distance(T->v[u],T->v[v]);
             if(dist < H.cost[v]){
-                H.cost[v] = dist;
                 parent[v] = u; 
-                H.update(i);
+                H.change_cost(i, dist);
             }
         }
         
     }
-
-    return T;
+    
 }
-/*
-int dfs(Graph T, int u, int ordem[], int pos){
-    ordem[pos++]=u;
-    T.v[u].visit=1;
+
+void dfs(Graph* T, int u, vector<int>& visit){
+    T->order.push_back(u);
+    visit[u]=1;
 
     int v;
-    for(int i=0; i<T.v[u].adj_size; i++){
-        v = T.v[u].adj[i];
-        if (!T.v[v].visit){
-            pos = dfs(T, v, ordem, pos);
+    for(int i=0; i<T->v[u].adj_size; i++){
+        v = T->v[u].adj[i];
+        if (!visit[v]){
+            dfs(T, v, visit);
         }
     }
-    return pos;
 }
 
-Graph pre_ordem(Graph T, int r){
-    int* ordem = (int*)malloc(T.n*sizeof(int));
-    int pos=0;
-
-    for(int i=0; i<T.n; i++) T.v[i].visit=0;
-    dfs(T, r, ordem, pos);
-
-    Graph H(T.n);
-    for(int i=0; i<T.n; i++){H.v[i]=Vertice(T.v[ordem[i]].x,T.v[ordem[i]].y);}
-    return H;
+double cycle_cost(Graph* T){
+    double cost=0;
+    for(int i=1; i<=T->n; i++){
+        int u = (i-1)%T->n;
+        int v = i%T->n;
+        cost+=T->distance(T->v[u],T->v[v]);
+    }
+    return cost;
 }
-*/
-void approx_tsp_tour(Graph G){
-    int r = 0;
-    //for(int i=0; i<G.n; i++) if(G.v[i].y<G.v[r].y) r=i;
 
-    cout << "Calculando Prim..." << endl;
-    T = mst_prim(G, r);
-    cout << "Ok!" << endl;
-    
-  
-    //cout << "Calculando Pré Ordem..." << endl;
-    //H = pre_ordem(T, r);
+double pre_order(Graph* T, int r=0){
+    vector<int> visit;
+    for(int i=0; i<T->n; i++) visit.push_back(0);
+    dfs(T, r, visit);
+    return cycle_cost(T);
 }
 
 int main(int argc, char *argv[]){
-    if (argc != 2) {
-		fprintf(stderr, "Uso: %s input.txt\n", argv[0]);
-		return 1;
-	}
-
-    Graph R = read_points(argv[1]);
-    if(R.n<2){
-		fprintf(stderr, "Grafo pequeno\n");
-        return 1;
-    }
     clock_t t;
     t = clock();
-    approx_tsp_tour(R);
-    t = clock()-t;
     
-    cout << (float)t/CLOCKS_PER_SEC << endl;
+    Graph T = read_points(argv[1]);
+    
+    mst_prim(&T);
+    
+    double cost = pre_order(&T);
+    
+    save_tree("build/tree.txt", T);
+    save_cycle("build/cycle.txt", T);
+    
 
-    
-    cout << "Salvando..." << endl;
-    cout << "Salvando a árvore mínima..." << endl;
-    save_tree("build/tree.txt");
-    //cout << "Salvando o ciclo..." << endl;
-    //save_cycle(H, "build/cycle.txt");
-    cout << "Ok!" << endl;
+    t = clock()-t;
+    double time = (double)t/CLOCKS_PER_SEC;
+    printf("%lf %lf\n", time, cost);
     
     return 0;
 }
