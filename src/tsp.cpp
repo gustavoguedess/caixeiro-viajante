@@ -207,14 +207,14 @@ int main(int argc, char *argv[]){
     clock_t t;
     t = clock();
 
-    Graph T = read_points("input.txt");
+    Graph T = read_points(argv[1]);
 
     mst_prim(&T);
 
     double cost = pre_order(&T);
 
-    //save_tree("tree.txt", T);
-    //save_cycle("cycle.txt", T);
+    save_tree("build/tree.txt", T);
+    save_cycle("build/cycle.txt", T);
 
 
     t = clock()-t;
