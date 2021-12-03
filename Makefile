@@ -1,2 +1,3 @@
+
 all:
-    g++ tsp.cpp -o tsp
+	g++ tsp.cpp -o tsp
