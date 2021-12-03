@@ -242,8 +242,8 @@ int main(int argc, char *argv[]){
     double cost = pre_order(&T);
 
     //Salva os dados
-    save_tree("build/tree.txt", T);
-    save_cycle("build/cycle.txt", T);
+    save_tree("tree.txt", T);
+    save_cycle("cycle.txt", T);
 
 
     t = clock()-t;
