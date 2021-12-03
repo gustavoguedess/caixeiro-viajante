@@ -136,8 +136,10 @@ void save_tree(const char* filename, Graph T){
     for(int i=0; i<T.n; i++){
         for(int j=0; j<T.v[i].adj_size; j++){
             int v = T.v[i].adj[j];
-            fprintf(fp, "%d %d\n", T.v[i].x, T.v[i].y);
-            fprintf(fp, "%d %d\n", T.v[v].x, T.v[v].y);
+            if(i!=v){
+                fprintf(fp, "%d %d\n", T.v[i].x, T.v[i].y);
+                fprintf(fp, "%d %d\n", T.v[v].x, T.v[v].y);
+            }
         }
     }
 
