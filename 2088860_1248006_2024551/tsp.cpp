@@ -136,8 +136,10 @@ void save_tree(const char* filename, Graph T){
     for(int i=0; i<T.n; i++){
         for(int j=0; j<T.v[i].adj_size; j++){
             int v = T.v[i].adj[j];
-            fprintf(fp, "%d %d\n", T.v[i].x, T.v[i].y);
-            fprintf(fp, "%d %d\n", T.v[v].x, T.v[v].y);
+            if(i!=v){
+                fprintf(fp, "%d %d\n", T.v[i].x, T.v[i].y);
+                fprintf(fp, "%d %d\n", T.v[v].x, T.v[v].y);
+            }
         }
     }
 
@@ -155,6 +157,7 @@ void save_cycle(const char* filename, Graph T){
 }
 // ------------------------------------------------------
 
+//Algoritmo do Prim, recebe os vértices em T e o vértice inicial r
 void mst_prim(Graph* T, int r=0){
     Heap H;
     vector<int> visited(T->n);
@@ -190,6 +193,7 @@ void mst_prim(Graph* T, int r=0){
 
 }
 
+//Algoritmo da DFS, recebe o grafo em T, o vértice atual e a lista de visitados
 void dfs(Graph* T, int u, vector<int>& visit){
     //Adiciona na fila
     T->order.push_back(u);
@@ -205,6 +209,7 @@ void dfs(Graph* T, int u, vector<int>& visit){
     }
 }
 
+//Algoritmo que calcula o custo do ciclo, recebe as arestas da árvore mínima e retorna o custo 
 double cycle_cost(Graph* T){
     double cost=0;
     //Calcula o custo de todos, incluindo do último para o primeiro
@@ -216,6 +221,7 @@ double cycle_cost(Graph* T){
     return cost;
 }
 
+//Algoritmo que salva a pré ordem a partir da árvore mínma T e salva na mesma, começando no vértice r. Retorna o custo dessa pré ordem
 double pre_order(Graph* T, int r=0){
     vector<int> visit;
 
